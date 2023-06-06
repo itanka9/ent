@@ -134,7 +134,7 @@ load().then(mapgl => {
                 type: 'Feature',
                 properties: {
                     id: uid(),
-                    layer: 'tree-' + mode
+                    type: mode
                 },
                 geometry: {
                     type: 'Point',
@@ -159,9 +159,10 @@ load().then(mapgl => {
             
             map.addLayer({
                 id: 'tree-layer-' + treeType,
-                filter: ['==', ['get', 'layer'], 'tree-' + treeType],
+                filter: ['==', ['get', 'type'], treeType],
                 type: 'model',
                 style: {
+                    scale: 0.67,
                     modelSrc: treeType,
                 }
             });
