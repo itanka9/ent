@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ app_name }}
+spec:
+  replicas: {{ replicas }}
+  revisionHistoryLimit: {{ revision_history_limit | default('3') }}
+  selector:
+    matchLabels:
+      app: {{ app_name }}
+  strategy:
+    rollingUpdate:
+      maxUnavailable: {{ max_unavailable | default('0') }} {# количество подов, которые могут быть не доступны во время обновления #}
+      maxSurge: {{ max_surge | default('1') }} {# количество подов, которые создаются поверх реплик во время обновления #}
+  template:
+    metadata:
+      labels:
+        app: {{ app_name }}
+    spec:
+      terminationGracePeriodSeconds: {{ termination_grace_period_seconds | default('60') }}  {# Секунды между SIGTERM и SIGKILL #}
+      nodeSelector:
+        role: worker
+      containers: {# Описание контейнеров в поде https://kubernetes.io/docs/user-guide/pods/ #}
+      - name: {{ app_name }}
+        image: {{ image_path }}:{{ image_version }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: {{ app_port }}
+        resources:  {# https://kubernetes.io/docs/user-guide/compute-resources/ #}
+          requests:
+            cpu: {{ requests_cpu }}
+            memory: {{ requests_memory }}
+          limits:
+            cpu: {{ limits_cpu }}
+            memory: {{ limits_memory }}
+        env:  {# Вот тут можно указать нужные ENV переменные для приложения #}
+        - name: JOB_ID {# Используется, чтобы обновлялись поды при том же image #}
+          value: "{{ job_id }}"

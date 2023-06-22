@@ -1,0 +1,25 @@
+---
+common:
+  k8s_namespace: webmaps
+  image_path: "docker-hub.2gis.ru/webmaps/ent"
+  image_version: "{{ env='IMAGE_VERSION' }}"
+  job_id: "{{ env='CI_JOB_ID' }}"
+  app_port: 8873
+  kubectl:
+    - template: deployment.yaml.j2
+    - template: service.yaml.j2
+  k8s_master_uri: "https://master.k8s.2gis.dev:6443"
+  k8s_token: "{{ env='K8S_STAGE_TOKEN' }}"
+  replicas: 1
+  requests_cpu: 1m
+  limits_cpu: 200m
+  requests_memory: 150M
+  limits_memory: 200M
+
+staging-master:
+  domains: ent
+  app_name: ent
+
+staging-demo:
+  domains: "ent-{{ env='CI_COMMIT_REF_SLUG' }}"
+  app_name: "ent-{{ env='CI_COMMIT_REF_SLUG' }}"
