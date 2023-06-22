@@ -1,5 +1,5 @@
 before_script:
-  - if [ "$CI_COMMIT_REF_SLUG" = "master" ]; then export IMAGE_VERSION="master-${CI_COMMIT_SHA:0:8}"; else export IMAGE_VERSION="branch-${CI_COMMIT_REF_SLUG}"; fi
+  - if [ "$CI_COMMIT_REF_SLUG" = "main" ]; then export IMAGE_VERSION="main-${CI_COMMIT_SHA:0:8}"; else export IMAGE_VERSION="branch-${CI_COMMIT_REF_SLUG}"; fi
   - echo $IMAGE_VERSION
 
 stages:
@@ -12,7 +12,7 @@ build:
   stage: build
   tags: [2gis, docker]
   image: node:18
-  only: [master, merge_requests]
+  only: [main, merge_requests]
   script:
     - npm ci
     - npm run build
@@ -23,7 +23,7 @@ build:
 
 build-docker:
   stage: build_docker
-  only: [master, merge_requests]
+  only: [main, merge_requests]
   tags: [docker-engine]
   script:
     - docker-compose build
@@ -61,24 +61,24 @@ demo:delete:
   dependencies: []
   script:
     - hub-tool tags:delete --path webmaps/ent $IMAGE_VERSION
-    - kubectl delete svc,deploy tiles-$CI_COMMIT_REF_SLUG
+    - kubectl delete svc,deploy ent-$CI_COMMIT_REF_SLUG
 
 staging:
   extends: [.deploy]
-  only: [master]
+  only: [main]
   environment:
-    name: master
+    name: main
     url: 'https://ent.web-staging.2gis.ru'
   script:
     - cd deploy
-    - k8s-handle deploy --section staging-master --sync-mode --strict
+    - k8s-handle deploy --section staging-main --sync-mode --strict
 
-docker-master-cleanup:
+docker-main-cleanup:
   stage: cleanup
-  only: [master]
+  only: [main]
   tags: [docker-engine]
   variables:
     GIT_STRATEGY: none
   dependencies: []
   script:
-    - hub-tool tags:cleanup --path webmaps/ent --regexp 'master-.*' --count 5
+    - hub-tool tags:cleanup --path webmaps/ent --regexp 'main-.*' --count 5
