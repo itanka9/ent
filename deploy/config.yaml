@@ -16,7 +16,7 @@ common:
   requests_memory: 150M
   limits_memory: 200M
 
-staging-master:
+staging-main:
   domains: ent
   app_name: ent
 
