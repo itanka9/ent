@@ -11,7 +11,7 @@ stages:
 build:
   stage: build
   tags: [2gis, docker]
-  image: node:12
+  image: node:18
   only: [master, merge_requests]
   script:
     - npm ci
