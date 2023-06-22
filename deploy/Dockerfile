@@ -7,4 +7,4 @@ LABEL description="Озеленение территорий на картах 2
       maintainer="<Белошицкий Михаил Юрьевич> m.beloshickiy@2gis.ru" \
       source="https://gitlab.2gis.ru/m.beloshickiy/ent"
 
-COPY dist/* /usr/share/nginx/html/
+COPY dist /usr/share/nginx/html
