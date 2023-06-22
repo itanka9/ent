@@ -26,17 +26,14 @@ load().then(mapgl => {
         center: [55.31878, 25.23584],
         zoom: 13,
         key: '4970330e-7f1c-4921-808c-0eb7c4e63001',
-        style: 'c080bb6a-8134-4993-93a1-5b4d8c36a59b'
+        style: 'c080bb6a-8134-4993-93a1-5b4d8c36a59b',
+        enableTrackResize: true
     });    
 
     restoreLocation(map);
 
-    const trees: any[] = JSON.parse(localStorage.getItem('trees') ?? '[]');
-    for (let i = 0; i < trees.length; i++) {
-        if (!trees[i].properties.id) {
-            trees[i].properties.id = uid();
-        }
-    }
+    let trees: any[] = JSON.parse(localStorage.getItem('trees') ?? '[]');
+    setupTrees(false);
 
     const dataSource = new mapgl.GeoJsonSource(map, {
         data: {
@@ -44,81 +41,6 @@ load().then(mapgl => {
             features: trees
         }
     });
-
-    function reloadSource () {
-        dataSource.setData({
-            type: 'FeatureCollection',
-            features: trees
-        });
-        localStorage.setItem('trees', JSON.stringify(trees));
-    }
-
-    function removeTree(id: number) {
-        if (isNaN(id)) {
-            return false;
-        }
-        let index = -1;
-        for (let i = 0; i < trees.length; i++) {
-            if (trees[i].properties.id === id) {
-                index = i;
-                break;
-            }
-        }
-        if (index !== -1) {
-            trees.splice(index, 1);
-            return true;
-        }
-        return false;
-    }
-
-    function clearTrees() {
-        trees.splice(0, trees.length);
-    }
-
-    function download () {
-        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
-            type: 'FeatureCollection',
-            features: trees
-        }));
-        var dlAnchorElem = document.createElement('a');
-        dlAnchorElem.setAttribute("href", dataStr);
-        dlAnchorElem.setAttribute("download", `trees.json`);
-        dlAnchorElem.click();
-    }
-
-    function load () {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.addEventListener('change', function () {
-            const firstFile = this.files && this.files[0];
-            const reader = new FileReader();
-            reader.addEventListener('load', function (ev) {
-                try {
-                    const parsed = JSON.parse(String(ev.target && ev.target.result));
-                    clearTrees();
-                    for (const f of parsed.features) {
-                        if (!f.properties.id) {
-                            f.properties.id = uid();
-                        }
-                        trees.push(f);
-                    }
-                    reloadSource();
-                } catch (err) {
-                    console.log(err)
-                }
-            })
-            if (!firstFile) {
-                return
-            }
-            reader.readAsText(firstFile);
-        }, false);
-        document.body.appendChild(input);
-        input.click();
-    }
-
-    function uid () {
-        return Math.trunc(Math.random() * 10 ** 9);
-    }
 
     map.on('click', function (ev) {
         if (mode === 'delete' && ev.targetData && ev.targetData.type === 'geojson') {
@@ -190,5 +112,111 @@ load().then(mapgl => {
         createButton('', t('load'), '', load);
 
         updateButtons(mode);
-    });    
+    });
+
+    function reloadSource () {
+        dataSource.setData({
+            type: 'FeatureCollection',
+            features: trees
+        });
+        localStorage.setItem('trees', JSON.stringify(trees));
+    }
+
+    function removeTree(id: number) {
+        if (isNaN(id)) {
+            return false;
+        }
+        let index = -1;
+        for (let i = 0; i < trees.length; i++) {
+            if (trees[i].properties.id === id) {
+                index = i;
+                break;
+            }
+        }
+        if (index !== -1) {
+            trees.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
+
+    function clearTrees() {
+        trees.splice(0, trees.length);
+    }
+
+    function download () {
+        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+            type: 'FeatureCollection',
+            features: trees
+        }));
+        var dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", `trees.json`);
+        dlAnchorElem.click();
+    }
+
+    function load () {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.addEventListener('change', function () {
+            const firstFile = this.files && this.files[0];
+            const reader = new FileReader();
+            reader.addEventListener('load', function (ev) {
+                try {
+                    const parsed = JSON.parse(String(ev.target && ev.target.result));
+                    clearTrees();
+                    for (const f of parsed.features) {
+                        if (!f.properties.id) {
+                            f.properties.id = uid();
+                        }
+                        trees.push(f);
+                    }
+                    setupTrees(true);
+                    reloadSource();
+                } catch (err) {
+                    console.log(err)
+                }
+            })
+            if (!firstFile) {
+                return
+            }
+            reader.readAsText(firstFile);
+        }, false);
+        document.body.appendChild(input);
+        input.click();
+    }
+
+    function setupTrees (fitBounds: boolean) {
+        const bounds = {
+            northEast: [-180, -90],
+            southWest: [180, 90]
+        }
+        for (let i = 0; i < trees.length; i++) {
+            const tree = trees[i];
+            if (!tree) {
+                continue
+            }
+            if (!tree.properties.id) {
+                tree.properties.id = uid();
+            }
+            const coordinates = tree?.geometry?.coordinates;
+            if (!coordinates) {
+                continue;
+            }
+            bounds.northEast[0] = Math.max(coordinates[0], bounds.northEast[0]);
+            bounds.northEast[1] = Math.max(coordinates[1], bounds.northEast[1]);
+            bounds.southWest[0] = Math.min(coordinates[0], bounds.southWest[0]);
+            bounds.southWest[1] = Math.min(coordinates[1], bounds.southWest[1]);
+        }
+
+        if (fitBounds) {
+            map.fitBounds(bounds);
+            map.setPitch(30);   
+        }
+    }
+
+    function uid () {
+        return Math.trunc(Math.random() * 10 ** 9);
+    }
 });
+

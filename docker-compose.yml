@@ -1,0 +1,11 @@
+version: '3'
+services:
+  nodejs:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+      args:
+        container_version: ${IMAGE_VERSION:-latest}
+    ports:
+      - "8873:8873"
+    image: docker-hub.2gis.ru/webmaps/ent:${IMAGE_VERSION:-latest}

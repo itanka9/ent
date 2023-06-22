@@ -1,0 +1,84 @@
+before_script:
+  - if [ "$CI_COMMIT_REF_SLUG" = "master" ]; then export IMAGE_VERSION="master-${CI_COMMIT_SHA:0:8}"; else export IMAGE_VERSION="branch-${CI_COMMIT_REF_SLUG}"; fi
+  - echo $IMAGE_VERSION
+
+stages:
+  - build
+  - build_docker
+  - deploy
+  - cleanup
+
+build:
+  stage: build
+  tags: [2gis, docker]
+  image: node:18
+  only: [master, merge_requests]
+  script:
+    - npm ci
+    - npm run build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 10 min
+
+build-docker:
+  stage: build_docker
+  only: [master, merge_requests]
+  tags: [docker-engine]
+  script:
+    - docker-compose build
+    - hub-tool tags:delete --path webmaps/ent $IMAGE_VERSION
+    - docker-compose push
+    - docker-compose down --rmi all
+
+.deploy:
+  stage: deploy
+  image: docker-hub.2gis.ru/2gis-io/k8s-handle:latest
+  dependencies: []
+  tags: [2gis, docker]
+
+demo:create:
+  extends: [.deploy]
+  only: [merge_requests]
+  environment:
+    name: demo/$CI_COMMIT_REF_NAME
+    url: "https://ent-$CI_COMMIT_REF_NAME.web-staging.2gis.ru"
+    on_stop: demo:delete
+  script:
+    - cd deploy
+    - k8s-handle deploy --section staging-demo --sync-mode --strict
+
+demo:delete:
+  stage: cleanup
+  tags: [docker-engine]
+  only: [merge_requests]
+  when: manual
+  variables:
+    GIT_STRATEGY: none
+  environment:
+    name: demo/$CI_COMMIT_REF_NAME
+    action: stop
+  dependencies: []
+  script:
+    - hub-tool tags:delete --path webmaps/ent $IMAGE_VERSION
+    - kubectl delete svc,deploy tiles-$CI_COMMIT_REF_SLUG
+
+staging:
+  extends: [.deploy]
+  only: [master]
+  environment:
+    name: master
+    url: 'https://ent.web-staging.2gis.ru'
+  script:
+    - cd deploy
+    - k8s-handle deploy --section staging-master --sync-mode --strict
+
+docker-master-cleanup:
+  stage: cleanup
+  only: [master]
+  tags: [docker-engine]
+  variables:
+    GIT_STRATEGY: none
+  dependencies: []
+  script:
+    - hub-tool tags:cleanup --path webmaps/ent --regexp 'master-.*' --count 5

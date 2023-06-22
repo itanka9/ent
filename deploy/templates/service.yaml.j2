@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ app_name }}
+  annotations:
+    router.deis.io/domains: "{{ domains }}"
+    router.deis.io/maintenance: "false" {# Если true, то http ответы будут 503 #}
+    router.deis.io/ssl.enforce: "false" {# Если true, будет редирект с http на https на уровне роутера #}
+  labels:
+    router.deis.io/routable: "true"
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: {{ app_port }}
+  selector:
+    app: {{ app_name }}
