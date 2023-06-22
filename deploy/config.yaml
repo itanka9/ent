@@ -4,7 +4,7 @@ common:
   image_path: "docker-hub.2gis.ru/webmaps/ent"
   image_version: "{{ env='IMAGE_VERSION' }}"
   job_id: "{{ env='CI_JOB_ID' }}"
-  app_port: 8873
+  app_port: 80
   kubectl:
     - template: deployment.yaml.j2
     - template: service.yaml.j2
