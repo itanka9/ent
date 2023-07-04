@@ -37,8 +37,10 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm install
+      - name: Fix deploy path
+        run: npm install
       - name: Build
-        run: npm run build
+        run: npm run build -- --base=/ent/
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
