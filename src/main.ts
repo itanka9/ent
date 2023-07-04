@@ -199,6 +199,9 @@ load().then(mapgl => {
             if (!tree.properties.id) {
                 tree.properties.id = uid();
             }
+            if (!tree.properties.syscode && tree.properties.type) {
+                tree.properties.syscode = treeCodes[tree.properties.type];
+            }
             const coordinates = tree?.geometry?.coordinates;
             if (!coordinates) {
                 continue;
