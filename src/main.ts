@@ -3,6 +3,7 @@ import './style.css'
 import { restoreLocation } from './url-controller';
 import { createButton, createSeparator, updateButtons } from './buttons';
 import { ru } from './locale';
+import { treeConfig } from './trees';
 
 const locale: { [key: string]: string } = ru;
 
@@ -10,14 +11,12 @@ const t = (k: string) => {
     return locale[k] ?? k;
 };
 
-const treeTypes = [ 'tree', 'pine', 'bush', 'palm' ];
-            
-const treeModels: { [key: string]: string } = {
-    tree: 'tree_d-21f6c1712f95339371cd5778b0b2e0e81351fa996cfa00fbf0306c5953d1b75c.glb',
-    pine: 'pine_d-060ceb840fb075c6c125e04e824fbdeba1fa7a820bb6118d74b6a56bd6b755b1.glb',
-    bush: 'bush_d-635a838a64524508941f98f5241591d91e75a696c314772aadaef2f467025aee.glb',
-    palm: 'palm_d-027dcd14a5daaf5e6f7c13805386a6297412055fa469304c03cce5d603a3a2de.glb'
-}
+const treeTypes = treeConfig.map(item => item.id);
+
+const treeCodes = treeConfig.reduce<{ [key: string]: number}>((codes, item) => {
+    codes[item.id] = item.syscode;
+    return codes;
+}, {})
 
 let mode = 'tree';
 
@@ -56,6 +55,7 @@ load().then(mapgl => {
                 type: 'Feature',
                 properties: {
                     id: uid(),
+                    syscode: treeCodes[mode],
                     type: mode
                 },
                 geometry: {
@@ -76,7 +76,7 @@ load().then(mapgl => {
            
             // @ts-ignore
             map.addModel(treeType, {
-                url: treeModels[treeType]
+                url: `${self.origin}/models/${treeType}.glb`
             });            		
             
             map.addLayer({
