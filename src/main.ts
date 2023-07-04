@@ -76,7 +76,7 @@ load().then(mapgl => {
            
             // @ts-ignore
             map.addModel(treeType, {
-                url: `${self.origin}/models/${treeType}.glb`
+                url: `${self.origin}/ent/models/${treeType}.glb`
             });            		
             
             map.addLayer({
