@@ -7,6 +7,8 @@ import { treeConfig } from './trees';
 
 const locale: { [key: string]: string } = ru;
 
+const baseUrl = location.origin + location.pathname;
+
 const t = (k: string) => {
     return locale[k] ?? k;
 };
@@ -76,7 +78,7 @@ load().then(mapgl => {
            
             // @ts-ignore
             map.addModel(treeType, {
-                url: `${self.origin}/ent/models/${treeType}.glb`
+                url: `${baseUrl}/models/${treeType}.glb`
             });            		
             
             map.addLayer({
