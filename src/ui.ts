@@ -1,4 +1,5 @@
 const buttons: HTMLButtonElement[] = [];
+const selects: HTMLSelectElement[] = [];
 
 export function createButton(id: string, caption: string, _image: string, onclick: () => void) {
     const toolsEl = document.getElementById('tools');
@@ -28,5 +29,28 @@ export function updateButtons (active: string) {
         } else {
             b.classList.remove('active');
         }
+    }
+    for (const s of selects) {
+        s.value = active;
+    }
+}
+
+export function createSelect (onchange: (input: string) => void) {
+    const toolsEl = document.getElementById('tools');
+    const select = document.createElement('select');
+    select.className = 'select';
+    select.addEventListener('change', () => {
+        onchange(select.value);
+    })
+    toolsEl?.appendChild(select);
+    selects.push(select);
+
+    return {
+        addOption (id: string, caption: string) {
+            const option = document.createElement('option');
+            option.innerText = caption;
+            option.value = id;
+            select.appendChild(option);
+        },
     }
 }

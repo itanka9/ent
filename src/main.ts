@@ -1,7 +1,7 @@
 import { load } from '@2gis/mapgl';
 import './style.css'
 import { restoreLocation } from './url-controller';
-import { createButton, createSeparator, updateButtons } from './buttons';
+import { createButton, createSelect, createSeparator, updateButtons } from './ui';
 import { ru } from './locale';
 import { treeConfig } from './trees';
 
@@ -70,11 +70,13 @@ load().then(mapgl => {
     });
 
     map.on('styleload', () => {
+        const select = createSelect((newMode: string) => {
+            mode = newMode;
+            updateButtons(mode);
+        });
+    
         for (const treeType of treeTypes) {
-            createButton(treeType, t(treeType), '', () => {
-                mode = treeType;
-                updateButtons(mode);
-            });
+            select.addOption(treeType, t(treeType));
            
             // @ts-ignore
             map.addModel(treeType, {

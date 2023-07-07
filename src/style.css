@@ -32,7 +32,7 @@ body,
   justify-content: flex-start;
 }
 
-#tools button {
+#tools button, select {
   background: white;
   border: none;
   border-radius: 4px;
