@@ -27,7 +27,7 @@ load().then(mapgl => {
         center: [55.31878, 25.23584],
         zoom: 13,
         key: '4970330e-7f1c-4921-808c-0eb7c4e63001',
-        style: 'c080bb6a-8134-4993-93a1-5b4d8c36a59b',
+        style: 'eb10e2c3-3c28-4b81-b74b-859c9c4cf47e',
         enableTrackResize: true
     });    
 
