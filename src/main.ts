@@ -26,7 +26,7 @@ load().then(mapgl => {
     const map = new mapgl.Map('map', {
         center: [55.31878, 25.23584],
         zoom: 13,
-        key: '4970330e-7f1c-4921-808c-0eb7c4e63001',
+        key: '042b5b75-f847-4f2a-b695-b5f58adc9dfd',
         style: 'eb10e2c3-3c28-4b81-b74b-859c9c4cf47e',
         enableTrackResize: true
     });    
